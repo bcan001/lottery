@@ -1,7 +1,12 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3'); // capitalize because Web3 is a constructor function
-const web3 = new Web3(ganache.provider()); // lowercase because its an instance function
+
+// const web3 = new Web3(ganache.provider()); // lowercase because its an instance function
+// UPDATE THESE TWO LINES RIGHT HERE!!!!! <-----------------
+const provider = ganache.provider();
+const web3 = new Web3(provider);
+
 const { interface, bytecode } = require('../compile'); // interface = abi, bytecode = raw bytecode
 
 
@@ -17,14 +22,35 @@ beforeEach(async () => {
 	// Use one of those accounts to deploy the contract
 	// inbox is the JAVASCRIPT REPRESENTATION OF THE CONTRACT ON THE BLOCKCHAIN. WHAT WE WILL BE TESTING.
 	inbox = await new web3.eth.Contract(JSON.parse(interface)) // teaches web3 about what methods an inbox contract has (has to be json object)
-		.deploy({ data: bytecode, arguments: ['Hi there!'] }) // tells web3 that we want to deploy a new copy of this contract (arguments are 1 to 1 connection to Inbox.sol)
+		.deploy({ 
+			data: bytecode, 
+			arguments: ['Hi there!'] 
+		}) // tells web3 that we want to deploy a new copy of this contract (arguments are 1 to 1 connection to Inbox.sol)
 		.send({ from: accounts[0], gas: '1000000' }) // instructs web3 to send out a transaction that creates this contract
+
+
+	// ADD THIS ONE LINE RIGHT HERE!!!!! <---------------------
+  inbox.setProvider(provider);
 });
 
 
 describe('Inbox', () => {
 	it('deploys a contract', () => {
-		console.log(inbox);
+		// console.log(inbox);
+		assert.ok(inbox.options.address); // if inbox.options.address is a truthy value (a string), it will pass
+	});
+
+	it('has a default message', async () => {
+		// call a method to our ibox function. methods.message() calls the message function of the inbox instance
+		const message = await inbox.methods.message().call();
+		assert.equal(message, 'Hi there!');
+	});
+
+	// test if we can change the message
+	it('can change the message', async () => {
+		await inbox.methods.setMessage('changed message').send({ from: accounts[0] }); // .send() the transaction to the network
+		const message = await inbox.methods.message().call();
+		assert.equal(message, 'changed message');
 	});
 });
 
