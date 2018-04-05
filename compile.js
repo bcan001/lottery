@@ -3,7 +3,7 @@ const fs = require('fs'); // file sync module
 const solc = require('solc'); // solidity compiler module
 
 const lotteryPath = path.resolve(__dirname, 'contracts', 'Lottery.sol'); // bring in files
-const source = fs.readFileSync(inboxPath, 'utf8'); // read in contents of the file
+const source = fs.readFileSync(lotteryPath, 'utf8'); // read in contents of the file
 
 module.exports = solc.compile(source, 1).contracts[':Lottery']; // compile the file
 

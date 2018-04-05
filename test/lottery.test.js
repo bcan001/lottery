@@ -1,9 +1,6 @@
 const assert = require('assert');
 const ganache = require('ganache-cli');
 const Web3 = require('web3'); // capitalize because Web3 is a constructor function
-
-// const web3 = new Web3(ganache.provider()); // lowercase because its an instance function
-// UPDATE THESE TWO LINES RIGHT HERE!!!!! <-----------------
 const provider = ganache.provider();
 const web3 = new Web3(provider);
 
@@ -11,8 +8,27 @@ const { interface, bytecode } = require('../compile'); // interface = abi, bytec
 
 // LOTTERY CONTRACT CODE BELOW:
 
+// initialize variables
+let lottery;
+let accounts;
 
+beforeEach(async () => {
+	accounts = await web3.eth.getAccounts();
 
+	lottery = await new web3.eth.Contract(JSON.parse(interface)) // teaches web3 about what methods a lottery contract has (has to be json object)
+		.deploy({ 
+			data: bytecode
+		}).send({
+			from: accounts[0],
+			gas: '1000000'
+		});
+});
+
+describe('Lottery Contract', () => {
+  it('deploys a contract', () => {
+    assert.ok(lottery.options.address);
+  });
+});
 
 
 
